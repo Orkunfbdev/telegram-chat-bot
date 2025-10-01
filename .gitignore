@@ -1,0 +1,10 @@
+# Node / n8n / local env
+node_modules/
+.env
+.env.*
+.n8n/
+dist/
+build/
+.DS_Store
+Thumbs.db
+*.log

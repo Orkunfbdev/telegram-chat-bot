@@ -1,0 +1,422 @@
+{
+  "name": "telegram bot connect",
+  "nodes": [
+    {
+      "parameters": {
+        "updates": [
+          "message"
+        ],
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        0
+      ],
+      "id": "6880aa5b-eac5-487a-885a-91c73d671f20",
+      "name": "Telegram Trigger",
+      "webhookId": "0178834e-ac64-427f-9563-c5e310700cea",
+      "credentials": {
+        "telegramApi": {
+          "id": "kjUaTUI8N4lp6Rdf",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.message.text }}",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "string",
+                      "operation": "exists",
+                      "singleValue": true
+                    },
+                    "id": "df0aab43-305f-40df-a5ab-e758ba264939"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "text"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "12d33747-1c7c-44f0-b203-05cf8db85858",
+                    "leftValue": "={{ $json.message.voice.file_id }}",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "string",
+                      "operation": "exists",
+                      "singleValue": true
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "voice"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        220,
+        0
+      ],
+      "id": "b4b2734b-1d65-4473-be19-92b94a0db7bf",
+      "name": "Switch"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "d0eac945-783d-46ad-96c9-c7c241ab07f6",
+              "name": "text ",
+              "value": "={{ $json.message.text }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        480,
+        -200
+      ],
+      "id": "f7c1d444-a253-4de2-872a-1b45a62c5741",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "resource": "file",
+        "fileId": "={{ $json.message.voice.file_id }}"
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        440,
+        100
+      ],
+      "id": "9755db90-608b-4208-9e18-c1714f857bcb",
+      "name": "Get a file",
+      "webhookId": "56c37ea5-3cf3-41b6-b9b0-2f1483b5b801",
+      "credentials": {
+        "telegramApi": {
+          "id": "kjUaTUI8N4lp6Rdf",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "audio",
+        "operation": "transcribe",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        660,
+        120
+      ],
+      "id": "57da6a77-067d-4fd0-b848-0f6017f57820",
+      "name": "Transcribe a recording",
+      "credentials": {
+        "openAiApi": {
+          "id": "DLQadKb21hEdvRZ7",
+          "name": "OpenAi account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.text }}",
+        "options": {
+          "systemMessage": "Sen, axezi Restorant'in hizmet veren bir yardımcı asistansın. Sorulan soruların cevaplarını Vector Store Tool kullanarak oradan gelen data'ya göre cevaplar vereceksin. Dikkat etmen gerekenler her sorguda mutlaka VectorStore Sorgu'ya atıp cevabını orada ara. Samimi ve dost canlısı şekilde davran. Her cevabında sonda bir tane emoji kullan. VectorStore içerisinde olmayan datalar için yanıt verme. Üzgünüm, bunu cevaplayamıyorum. Başka sorunuz var mı? şeklinde yönlendirme yap. Yani diyorum ki sana, sakın, sana attığım dosyalardan bir şeyler bul, dışarı çıkıp internet bazında bir arama yapma."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2,
+      "position": [
+        880,
+        120
+      ],
+      "id": "be75077e-e568-430a-8942-088ebeda0dec",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4.1-mini"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        780,
+        360
+      ],
+      "id": "f9644165-49a2-48ee-8804-db60f3a03e8e",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "DLQadKb21hEdvRZ7",
+          "name": "OpenAi account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('Telegram Trigger').item.json.message.chat.id }}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryPostgresChat",
+      "typeVersion": 1.3,
+      "position": [
+        920,
+        360
+      ],
+      "id": "29cfb31b-3178-44c9-8ea0-a843d0980821",
+      "name": "Postgres Chat Memory",
+      "credentials": {
+        "postgres": {
+          "id": "VuiQnKb8hhp7tu9g",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.embeddingsOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        1320,
+        440
+      ],
+      "id": "1befddc6-dda6-420b-a4b7-b8ebb6131092",
+      "name": "Embeddings OpenAI",
+      "credentials": {
+        "openAiApi": {
+          "id": "DLQadKb21hEdvRZ7",
+          "name": "OpenAi account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "retrieve-as-tool",
+        "toolDescription": "axezi restorana ait menü  , hakkında sıkça sorulan sorular gibi bilgilere sahiğsin",
+        "tableName": {
+          "__rl": true,
+          "value": "documents",
+          "mode": "list",
+          "cachedResultName": "documents"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStoreSupabase",
+      "typeVersion": 1.3,
+      "position": [
+        1140,
+        280
+      ],
+      "id": "fda8bfec-549b-4efc-ba47-da6a303f0415",
+      "name": "vector store",
+      "credentials": {
+        "supabaseApi": {
+          "id": "lpyjMCXd2ZiWGIjm",
+          "name": "Supabase account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').item.json.message.chat.id }}",
+        "text": "={{ $json.output }}",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1240,
+        120
+      ],
+      "id": "197dd92a-044e-451d-837b-776a92d412ed",
+      "name": "Send a text message",
+      "webhookId": "b59bdb34-1f11-4a01-84ef-99c5f04f04ad",
+      "credentials": {
+        "telegramApi": {
+          "id": "kjUaTUI8N4lp6Rdf",
+          "name": "Telegram account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Telegram Trigger": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Get a file",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get a file": {
+      "main": [
+        [
+          {
+            "node": "Transcribe a recording",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Transcribe a recording": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Postgres Chat Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings OpenAI": {
+      "ai_embedding": [
+        [
+          {
+            "node": "vector store",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "vector store": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Send a text message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "b5b84227-771f-4538-bccb-ac1a25007207",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "0e9276ca66b9fea21b7a42598f9673295a6f5cc7000856211693fcb83acefec9"
+  },
+  "id": "8wfBoRWSfW86MLtZ",
+  "tags": []
+}
